@@ -1,0 +1,343 @@
+{
+  "name": "vscode-org-mode",
+  "displayName": "Org Mode",
+  "description": "Org mode support for VS Code",
+  "version": "0.1.3",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Keymaps"
+  ],
+  "activationEvents": [
+    "onLanguage:org"
+  ],
+  "main": "./out/extension.js",
+  "browser": "./out/extension.js",
+  "galleryBanner": {
+    "color": "#C80000",
+    "theme": "dark"
+  },
+  "icon": "images/org-logo.png",
+  "contributes": {
+    "languages": [
+      {
+        "id": "org",
+        "aliases": ["Org", "org-mode"],
+        "extensions": [".org"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "configuration": {
+      "title": "Org Mode",
+      "properties": {
+        "orgMode.highlightEntireLine": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to highlight the entire line with the TODO state color"
+        },
+        "orgMode.boldEntireLine": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to make the entire TODO line bold"
+        },
+        "orgMode.highlightCodeBlocks": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to highlight code and example blocks with a purple background"
+        },
+        "orgMode.codeBlockOpacity": {
+          "type": "number",
+          "default": 0.1,
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "The opacity of the code block background highlighting (0.0 to 1.0)"
+        }
+      }
+    },
+    "colors": [
+      {
+        "id": "org.todoKeyword",
+        "description": "Color for TODO keywords",
+        "defaults": {
+          "dark": "#FF8C00",
+          "light": "#FF8C00",
+          "highContrast": "#FF8C00"
+        }
+      },
+      {
+        "id": "org.inProgressKeyword",
+        "description": "Color for IN-PROGRESS keywords",
+        "defaults": {
+          "dark": "#FFD700",
+          "light": "#FFD700",
+          "highContrast": "#FFD700"
+        }
+      },
+      {
+        "id": "org.waitingKeyword",
+        "description": "Color for WAITING keywords",
+        "defaults": {
+          "dark": "#ADD8E6",
+          "light": "#4682B4",
+          "highContrast": "#4682B4"
+        }
+      },
+      {
+        "id": "org.doneKeyword",
+        "description": "Color for DONE keywords",
+        "defaults": {
+          "dark": "#32CD32",
+          "light": "#32CD32",
+          "highContrast": "#32CD32"
+        }
+      },
+      {
+        "id": "org.srcBlock",
+        "description": "Background color for source code blocks",
+        "defaults": {
+          "dark": "#4B0082",
+          "light": "#E6E6FA",
+          "highContrast": "#4B0082"
+        }
+      },
+      {
+        "id": "org.exampleBlock",
+        "description": "Background color for example blocks",
+        "defaults": {
+          "dark": "#4B0082",
+          "light": "#E6E6FA",
+          "highContrast": "#4B0082"
+        }
+      },
+      {
+        "id": "org.priorityA",
+        "description": "Color for priority A tags",
+        "defaults": {
+          "dark": "#FF0000",
+          "light": "#FF0000",
+          "highContrast": "#FF0000"
+        }
+      },
+      {
+        "id": "org.priorityB",
+        "description": "Color for priority B tags",
+        "defaults": {
+          "dark": "#FFA500",
+          "light": "#FFA500",
+          "highContrast": "#FFA500"
+        }
+      },
+      {
+        "id": "org.priorityC",
+        "description": "Color for priority C tags",
+        "defaults": {
+          "dark": "#FFFF00",
+          "light": "#FFD700",
+          "highContrast": "#FFFF00"
+        }
+      },
+      {
+        "id": "org.priorityD",
+        "description": "Color for priority D tags",
+        "defaults": {
+          "dark": "#00FFFF",
+          "light": "#00CCCC",
+          "highContrast": "#00FFFF"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "org",
+        "scopeName": "text.org",
+        "path": "./syntaxes/org.tmLanguage.json"
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "scopes": {
+          "keyword.other.todo.org": ["org.todoKeyword"]
+        }
+      },
+      {
+        "scopes": {
+          "keyword.other.in-progress.org": ["org.inProgressKeyword"]
+        }
+      },
+      {
+        "scopes": {
+          "keyword.other.waiting.org": ["org.waitingKeyword"]
+        }
+      },
+      {
+        "scopes": {
+          "keyword.other.done.org": ["org.doneKeyword"]
+        }
+      },
+      {
+        "scopes": {
+          "markup.raw.block.src.org": ["org.srcBlock"]
+        }
+      },
+      {
+        "scopes": {
+          "markup.raw.block.example.org": ["org.exampleBlock"]
+        }
+      },
+      {
+        "scopes": {
+          "keyword.other.priority.a.org": ["org.priorityA"]
+        }
+      },
+      {
+        "scopes": {
+          "keyword.other.priority.b.org": ["org.priorityB"]
+        }
+      },
+      {
+        "scopes": {
+          "keyword.other.priority.c.org": ["org.priorityC"]
+        }
+      },
+      {
+        "scopes": {
+          "keyword.other.priority.d.org": ["org.priorityD"]
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "org-mode.toggleTodo",
+        "title": "Org: Toggle TODO state"
+      },
+      {
+        "command": "org-mode.toggleCheckbox",
+        "title": "Org: Toggle checkbox"
+      },
+      {
+        "command": "org-mode.newItem",
+        "title": "Org: Create new item"
+      },
+      {
+        "command": "org-mode.chooseTodoState",
+        "title": "Org: Choose TODO state"
+      },
+      {
+        "command": "org-mode.createCheckbox",
+        "title": "Org: Create checkbox item"
+      },
+      {
+        "command": "org-mode.createExampleBlock",
+        "title": "Org: Create example block"
+      },
+      {
+        "command": "org-mode.foldAll",
+        "title": "Org: Fold all headings"
+      },
+      {
+        "command": "org-mode.unfoldAll",
+        "title": "Org: Unfold all headings"
+      },
+      {
+        "command": "org-mode.toggleFold",
+        "title": "Org: Toggle fold for current heading"
+      },
+      {
+        "command": "org-mode.moveToNextCell",
+        "title": "Org: Move to next table cell"
+      },
+      {
+        "command": "org-mode.moveToPreviousCell",
+        "title": "Org: Move to previous table cell"
+      },
+      {
+        "command": "org-mode.formatTable",
+        "title": "Org: Format table"
+      },
+      {
+        "command": "org-mode.createTable",
+        "title": "Org: Create new table"
+      }      
+    ],
+    "keybindings": [
+      {
+        "command": "org-mode.toggleTodo",
+        "key": "alt+t",
+        "when": "editorLangId == org"
+      },
+      {
+        "command": "org-mode.toggleCheckbox",
+        "key": "alt+c",
+        "when": "editorLangId == org && !org-mode.isTodoHeading"
+      },
+      {
+        "command": "org-mode.chooseTodoState",
+        "key": "alt+c",
+        "when": "editorLangId == org && org-mode.isTodoHeading"
+      },
+      {
+        "command": "org-mode.newItem",
+        "key": "ctrl+enter",
+        "when": "editorLangId == org"
+      },
+      {
+        "command": "org-mode.createCheckbox",
+        "key": "alt+d",
+        "when": "editorLangId == org"
+      },
+      {
+        "command": "org-mode.createExampleBlock",
+        "key": "alt+e",
+        "when": "editorLangId == org"
+      },
+      {
+        "command": "org-mode.foldAll",
+        "key": "alt+f",
+        "when": "editorLangId == org"
+      },
+      {
+        "command": "org-mode.unfoldAll",
+        "key": "alt+shift+f",
+        "when": "editorLangId == org"
+      },
+      {
+        "command": "org-mode.toggleFold",
+        "key": "tab",
+        "when": "editorLangId == org && org-mode.isHeadingLine"
+      },
+      {
+        "command": "org-mode.moveToNextCell",
+        "key": "tab",
+        "when": "editorLangId == org && org-mode.isTableRow"
+      },
+      {
+        "command": "org-mode.moveToPreviousCell",
+        "key": "shift+tab",
+        "when": "editorLangId == org && org-mode.isTableRow"
+      },
+      {
+        "command": "org-mode.formatTable",
+        "key": "alt+enter",
+        "when": "editorLangId == org && org-mode.isTableRow"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "^16.11.7",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "eslint": "^8.26.0",
+    "typescript": "^4.8.4"
+  }
+}

@@ -1,0 +1,139 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Org",
+    "patterns": [
+    { "include": "#headings" },
+    { "include": "#todo-keywords" },
+    { "include": "#priority-tags" },
+    { "include": "#checkboxes" },
+    { "include": "#lists" },
+    { "include": "#tables" },
+    { "include": "#bold" },
+    { "include": "#italic" },
+    { "include": "#underline" },
+    { "include": "#code" },
+    { "include": "#links" },
+    { "include": "#comments" },
+    { "include": "#blocks" }
+    ],
+    "repository": {
+      "headings": {
+        "match": "^(\\*+)\\s+(.*)$",
+        "captures": {
+          "1": { "name": "markup.heading.org" },
+          "2": { "name": "entity.name.section.org" }
+        }
+      },
+      "priority-tags": {
+        "match": "\\[(#[A-D])\\]",
+        "captures": {
+          "0": { "name": "keyword.other.priority.tag.org" },
+          "1": { 
+            "patterns": [
+              {
+                "match": "#A",
+                "name": "keyword.other.priority.a.org"
+              },
+              {
+                "match": "#B",
+                "name": "keyword.other.priority.b.org"
+              },
+              {
+                "match": "#C",
+                "name": "keyword.other.priority.c.org"
+              },
+              {
+                "match": "#D",
+                "name": "keyword.other.priority.d.org"
+              }
+            ]
+          }
+        }
+      },
+      "todo-keywords": {
+        "patterns": [
+          {
+            "match": "\\bTODO\\b",
+            "name": "keyword.other.todo.org"
+          },
+          {
+            "match": "\\bIN-PROGRESS\\b",
+            "name": "keyword.other.in-progress.org"
+          },
+          {
+            "match": "\\bWAITING\\b",
+            "name": "keyword.other.waiting.org"
+          },
+          {
+            "match": "\\bDONE\\b",
+            "name": "keyword.other.done.org"
+          }
+        ]
+      },
+      "checkboxes": {
+        "match": "\\[( |x|X)\\]",
+        "name": "keyword.other.org"
+      },
+      "lists": {
+        "match": "^\\s*(-|\\+|\\*)\\s+",
+        "name": "markup.list.org"
+      },
+      "bold": {
+        "match": "\\*[^\\*\n]+\\*",
+        "name": "markup.bold.org"
+      },
+      "italic": {
+        "match": "/[^/\n]+/",
+        "name": "markup.italic.org"
+      },
+      "underline": {
+        "match": "_[^_\n]+_",
+        "name": "markup.underline.org"
+      },
+      "code": {
+        "match": "~[^~\n]+~|=([^=\n]+)=",
+        "name": "markup.inline.raw.org"
+      },
+      "links": {
+        "match": "\\[\\[[^\\]]+\\](?:\\[[^\\]]*\\])?\\]",
+        "name": "markup.underline.link.org"
+      },
+      "comments": {
+        "match": "^\\s*#.*$",
+        "name": "comment.line.org"
+      },
+      "blocks": {
+        "patterns": [
+          {
+            "begin": "^\\s*(?:(?:-\\s+)?\\[([xX\\s])\\])?\\s*#\\+BEGIN_SRC\\s*.*$",
+            "end": "^\\s*(?:(?:-\\s+)?\\[[xX\\s]\\])?\\s*#\\+END_SRC\\s*$",
+            "name": "markup.raw.block.src.org"
+          },
+          {
+            "begin": "^\\s*(?:(?:-\\s+)?\\[([xX\\s])\\])?\\s*#\\+BEGIN_EXAMPLE\\s*.*$",
+            "end": "^\\s*(?:(?:-\\s+)?\\[[xX\\s]\\])?\\s*#\\+END_EXAMPLE\\s*$",
+            "name": "markup.raw.block.example.org"
+          },
+          {
+            "begin": "^\\s*(?:(?:-\\s+)?\\[([xX\\s])\\])?\\s*#\\+BEGIN_QUOTE\\s*.*$",
+            "end": "^\\s*(?:(?:-\\s+)?\\[[xX\\s]\\])?\\s*#\\+END_QUOTE\\s*$",
+            "name": "markup.raw.block.quote.org"
+          }
+        ]
+      },
+        "tables": {
+        "patterns": [
+            {
+            "match": "^\\s*\\|[-+]+\\|[-+]+\\|.*$",
+            "name": "markup.table.header.org"
+            },
+            {
+            "match": "^\\s*\\|[^|]*\\|[^|]*\\|.*$",
+            "name": "markup.table.row.org"
+            }
+        ]
+        }     
+    },
+    "scopeName": "text.org"
+  }
+  

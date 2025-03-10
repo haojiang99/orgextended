@@ -1,0 +1,81 @@
+/* This file should be placed in the 'styles' folder of your extension */
+
+/* TODO keyword styling */
+.mtk.keyword.other.todo.org {
+    color: #FF8C00 !important; /* Dark Orange */
+    font-weight: bold;
+}
+
+/* IN-PROGRESS keyword styling */
+.mtk.keyword.other.in-progress.org {
+    color: #FFD700 !important; /* Gold */
+    font-weight: bold;
+}
+
+/* WAITING keyword styling */
+.mtk.keyword.other.waiting.org {
+    color: #4682B4 !important; /* Steel Blue */
+    font-weight: bold;
+}
+
+/* DONE keyword styling */
+.mtk.keyword.other.done.org {
+    color: #32CD32 !important; /* Lime Green */
+    font-weight: bold;
+}
+
+/* Priority tag styling */
+.mtk.keyword.other.priority.tag.org {
+    font-weight: bold;
+}
+
+.mtk.keyword.other.priority.a.org {
+    color: #FF0000 !important; /* Red */
+    font-weight: bold;
+}
+
+.mtk.keyword.other.priority.b.org {
+    color: #FFA500 !important; /* Orange */
+    font-weight: bold;
+}
+
+.mtk.keyword.other.priority.c.org {
+    color: #FFD700 !important; /* Gold/Yellow */
+    font-weight: bold;
+}
+
+.mtk.keyword.other.priority.d.org {
+    color: #00FFFF !important; /* Cyan */
+    font-weight: bold;
+}
+
+/* Heading styling with different levels */
+.mtk.markup.heading.org {
+    color: #569CD6;
+    font-weight: bold;
+}
+
+/* Checkbox styling */
+.mtk.keyword.other.org {
+    font-weight: bold;
+}
+
+/* Checked checkbox styling */
+.mtk.keyword.other.org:contains("[x]"), .mtk.keyword.other.org:contains("[X]") {
+    color: #32CD32;
+}
+
+/* Unchecked checkbox styling */
+.mtk.keyword.other.org:contains("[ ]") {
+    color: #FF8C00;
+}
+
+/* Table styling */
+.mtk.markup.table.header.org {
+    color: #569CD6 !important; /* Blue for header separator */
+    font-weight: bold;
+}
+
+.mtk.markup.table.row.org {
+    color: #D4D4D4 !important; /* Light gray for rows */
+}
