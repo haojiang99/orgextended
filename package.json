@@ -2,7 +2,7 @@
   "name": "vscode-org-mode",
   "displayName": "Org Mode",
   "description": "Org mode support for VS Code",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "engines": {
     "vscode": "^1.80.0"
   },
@@ -146,6 +146,15 @@
           "light": "#00CCCC",
           "highContrast": "#00FFFF"
         }
+      },
+      {
+        "id": "org.timestamp",
+        "description": "Color for timestamps",
+        "defaults": {
+          "dark": "#9370DB",
+          "light": "#9370DB",
+          "highContrast": "#9370DB"
+        }
       }
     ],
     "grammars": [
@@ -205,6 +214,11 @@
         "scopes": {
           "keyword.other.priority.d.org": ["org.priorityD"]
         }
+      },
+      {
+        "scopes": {
+          "markup.timestamp.org": ["org.timestamp"]
+        }
       }
     ],
     "commands": [
@@ -259,7 +273,19 @@
       {
         "command": "org-mode.createTable",
         "title": "Org: Create new table"
-      }      
+      },
+      {
+        "command": "org-mode.archiveDone",
+        "title": "Org: Archive DONE item"
+      },
+      {
+        "command": "org-mode.archiveCurrent",
+        "title": "Org: Archive current item"
+      },
+      {
+        "command": "org-mode.insertTimestamp",
+        "title": "Org: Insert timestamp"
+      }
     ],
     "keybindings": [
       {
@@ -321,7 +347,22 @@
         "command": "org-mode.formatTable",
         "key": "alt+enter",
         "when": "editorLangId == org && org-mode.isTableRow"
-      }
+      },
+      {
+        "command": "org-mode.archiveDone",
+        "key": "alt+a",
+        "when": "editorLangId == org && org-mode.isDoneHeading"
+      },
+      {
+        "command": "org-mode.archiveCurrent",
+        "key": "alt+shift+a",
+        "when": "editorLangId == org && org-mode.isHeadingLine"
+      },
+      {
+        "command": "org-mode.insertTimestamp",
+        "key": "ctrl+t",
+        "when": "editorLangId == org"
+      }      
     ]
   },
   "scripts": {

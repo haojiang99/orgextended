@@ -8,6 +8,7 @@
     { "include": "#checkboxes" },
     { "include": "#lists" },
     { "include": "#tables" },
+    { "include": "#timestamp" },
     { "include": "#bold" },
     { "include": "#italic" },
     { "include": "#underline" },
@@ -121,18 +122,22 @@
           }
         ]
       },
-        "tables": {
-        "patterns": [
-            {
-            "match": "^\\s*\\|[-+]+\\|[-+]+\\|.*$",
-            "name": "markup.table.header.org"
-            },
-            {
-            "match": "^\\s*\\|[^|]*\\|[^|]*\\|.*$",
-            "name": "markup.table.row.org"
-            }
-        ]
-        }     
+      "tables": {
+      "patterns": [
+          {
+          "match": "^\\s*\\|[-+]+\\|[-+]+\\|.*$",
+          "name": "markup.table.header.org"
+          },
+          {
+          "match": "^\\s*\\|[^|]*\\|[^|]*\\|.*$",
+          "name": "markup.table.row.org"
+          }
+      ]
+      },
+      "timestamp": {
+        "match": "\\*\\*\\d{2}:\\d{2} \\d{2}/\\d{2}\\*\\*",
+        "name": "markup.timestamp.org"
+      }     
     },
     "scopeName": "text.org"
   }

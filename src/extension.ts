@@ -74,7 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
     
-    // Register the newItem command
+    // Register the newItem command with improved checkbox block handling
     let newItemCommand = vscode.commands.registerCommand('org-mode.newItem', () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor) return;
@@ -120,8 +120,40 @@ export function activate(context: vscode.ExtensionContext) {
                 }
             }
         } else if (checkboxMatch) {
+            // Extract the indentation and checkbox pattern from the current line
             const indent = lineText.match(/^(\s*)/)?.[1] || '';
-            newLineText = `${indent}- [ ] `;
+            const checkboxIndent = lineText.substring(0, lineText.indexOf('['));
+            newLineText = `${checkboxIndent}[ ] `;
+            
+            // Find the end of the current checkbox block
+            let currentIndentLevel = indent.length;
+            let inCheckboxBlock = true;
+            
+            for (let i = position.line + 1; i < document.lineCount; i++) {
+                const nextLineText = document.lineAt(i).text;
+                
+                // If we hit a blank line, end of checkbox block
+                if (nextLineText.trim() === '') {
+                    insertLineNumber = i;
+                    break;
+                }
+                
+                // If we hit a line with different indentation or not a checkbox, might be end of block
+                const nextCheckboxMatch = nextLineText.match(/^\s*-\s+\[[ xX]\]/);
+                const nextIndent = nextLineText.match(/^(\s*)/)?.[1] || '';
+                
+                if (!nextCheckboxMatch || nextIndent.length !== currentIndentLevel) {
+                    // If not a checkbox or different indentation, insert here
+                    insertLineNumber = i;
+                    break;
+                }
+                
+                // If we reach the end of the document, insert at the end
+                if (i === document.lineCount - 1) {
+                    insertLineNumber = document.lineCount;
+                    break;
+                }
+            }
         } else {
             // Default new line
             const indent = lineText.match(/^(\s*)/)?.[1] || '';
@@ -288,8 +320,17 @@ export function activate(context: vscode.ExtensionContext) {
         // Unfold all regions in the document
         await vscode.commands.executeCommand('editor.unfoldAll');
     });
+
+    // function updateAllVisibleEditors() {
+    //     vscode.window.visibleTextEditors.forEach(editor => {
+    //         if (editor.document.languageId === 'org') {
+    //             applyDecorationsToEditor(editor);
+    //         }
+    //     });
+    // }
     
     function updateDecorations() {
+    // function applyDecorationsToEditor(activeEditor: vscode.TextEditor) {
         const editor = vscode.window.activeTextEditor;
         if (!editor || editor.document.languageId !== 'org') {
             return;
@@ -313,7 +354,7 @@ export function activate(context: vscode.ExtensionContext) {
                 color: highlightEntireLine ? color : undefined,
                 fontWeight: boldEntireLine ? 'bold' : undefined,
                 isWholeLine: false,  // We'll handle block highlighting separately
-                rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
+                rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
             });
         };
         
@@ -615,6 +656,9 @@ export function activate(context: vscode.ExtensionContext) {
         
         // Apply new decorations and store cleanup function
         decorationCleanup = updateDecorations();
+        // if (vscode.window.activeTextEditor) {
+        //     decorationCleanup = applyDecorationsToEditor(vscode.window.activeTextEditor);
+        // }
     }
     
     // Function to update context keys for keybinding conditions
@@ -624,6 +668,7 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.commands.executeCommand('setContext', 'org-mode.isTodoHeading', false);
             vscode.commands.executeCommand('setContext', 'org-mode.isHeadingLine', false);
             vscode.commands.executeCommand('setContext', 'org-mode.isTableRow', false);
+            vscode.commands.executeCommand('setContext', 'org-mode.isDoneHeading', false);
             return;
         }
         
@@ -640,6 +685,9 @@ export function activate(context: vscode.ExtensionContext) {
         // Check if cursor is on a table row
         const isTableRow = lineText.trim().startsWith('|');
         vscode.commands.executeCommand('setContext', 'org-mode.isTableRow', isTableRow);
+        // Check if cursor is on a DONE heading line
+        const isDoneHeading = !!lineText.match(/^\s*\*+\s+DONE\s+/);
+        vscode.commands.executeCommand('setContext', 'org-mode.isDoneHeading', isDoneHeading);
     }
     
     // Update decorations initially
@@ -975,6 +1023,236 @@ export function activate(context: vscode.ExtensionContext) {
         formatTableCommand,
         createTableCommand
     );
+
+    // Register the Archive Done Items command
+    let archiveDoneCommand = vscode.commands.registerCommand('org-mode.archiveDone', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor || editor.document.languageId !== 'org') return;
+        
+        const document = editor.document;
+        const position = editor.selection.active;
+        const lineText = document.lineAt(position.line).text;
+        
+        const fs = require('fs');
+        const path = require('path');
+        
+        // Check if this is a DONE heading line
+        const doneMatch = lineText.match(/^(\s*)(\*+)\s+DONE\s+(.*)$/);
+        if (!doneMatch) {
+            vscode.window.showInformationMessage('This command only works on DONE items.');
+            return;
+        }
+        
+        // Extract details of the current heading
+        const [, indent, stars, title] = doneMatch;
+        const headingLevel = stars.length;
+        
+        // Find the end of this heading's block (until next heading of same or higher level)
+        let blockEndLine = position.line;
+        for (let i = position.line + 1; i < document.lineCount; i++) {
+            const nextLineText = document.lineAt(i).text;
+            const nextHeadingMatch = nextLineText.match(/^(\s*)(\*+)\s+/);
+            
+            if (nextHeadingMatch && nextHeadingMatch[2].length <= headingLevel) {
+                // Found a heading of same or higher level
+                blockEndLine = i - 1;
+                break;
+            }
+            
+            if (i === document.lineCount - 1) {
+                // Reached end of document
+                blockEndLine = i;
+            }
+        }
+        
+        // Extract the content of the block to archive
+        let blockContent = '';
+        for (let i = position.line; i <= blockEndLine; i++) {
+            blockContent += document.lineAt(i).text + '\n';
+        }
+        
+        // Add archive note with timestamp
+        const now = new Date();
+        const timestamp = now.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        blockContent = blockContent.trim() + '\n  :ARCHIVE: Archived on ' + timestamp + '\n';
+        
+        // Determine the archive file path
+        const currentFilePath = document.uri.fsPath;
+        const archiveFilePath = currentFilePath.replace(/\.org$/, '.archive.org');
+        
+        try {
+            // Ensure the archive file exists with a header
+            if (!fs.existsSync(archiveFilePath)) {
+                const archiveHeader = `#+TITLE: Archive for ${path.basename(currentFilePath)}\n#+ARCHIVE_TIME: ${timestamp}\n\n`;
+                fs.writeFileSync(archiveFilePath, archiveHeader);
+            }
+            
+            // Append the archived content to the archive file
+            fs.appendFileSync(archiveFilePath, blockContent + '\n\n');
+            
+            // Delete the original block
+            await editor.edit(editBuilder => {
+                const range = new vscode.Range(
+                    new vscode.Position(position.line, 0),
+                    new vscode.Position(blockEndLine + 1, 0)
+                );
+                editBuilder.delete(range);
+            });
+            
+            vscode.window.showInformationMessage(`DONE item "${title}" archived successfully.`);
+            
+            // Optionally open the archive file
+            const openArchive = await vscode.window.showInformationMessage(
+                'Item archived. Would you like to open the archive file?',
+                'Yes', 'No'
+            );
+            
+            if (openArchive === 'Yes') {
+                const archiveUri = vscode.Uri.file(archiveFilePath);
+                await vscode.commands.executeCommand('vscode.open', archiveUri);
+            }
+        } catch (error) {
+            const errorMessage = (error instanceof Error) ? error.message : String(error);
+            vscode.window.showErrorMessage(`Failed to archive item: ${errorMessage}`);
+            console.error(error);
+        }
+    });
+
+    // Register the Archive Current Item command (works on any heading)
+    let archiveCurrentCommand = vscode.commands.registerCommand('org-mode.archiveCurrent', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor || editor.document.languageId !== 'org') return;
+        
+        const document = editor.document;
+        const position = editor.selection.active;
+        const lineText = document.lineAt(position.line).text;
+        
+        const fs = require('fs');
+        const path = require('path');
+        
+        // Check if this is a heading line
+        const headingMatch = lineText.match(/^(\s*)(\*+)\s+(?:(TODO|IN-PROGRESS|WAITING|DONE)\s+)?(.*)$/);
+        if (!headingMatch) {
+            vscode.window.showInformationMessage('This command only works on heading lines.');
+            return;
+        }
+        
+        // Extract details of the current heading
+        const [, indent, stars, state, title] = headingMatch;
+        const headingLevel = stars.length;
+        const headingTitle = title || '';
+        
+        // Find the end of this heading's block (until next heading of same or higher level)
+        let blockEndLine = position.line;
+        for (let i = position.line + 1; i < document.lineCount; i++) {
+            const nextLineText = document.lineAt(i).text;
+            const nextHeadingMatch = nextLineText.match(/^(\s*)(\*+)\s+/);
+            
+            if (nextHeadingMatch && nextHeadingMatch[2].length <= headingLevel) {
+                // Found a heading of same or higher level
+                blockEndLine = i - 1;
+                break;
+            }
+            
+            if (i === document.lineCount - 1) {
+                // Reached end of document
+                blockEndLine = i;
+            }
+        }
+        
+        // Extract the content of the block to archive
+        let blockContent = '';
+        for (let i = position.line; i <= blockEndLine; i++) {
+            blockContent += document.lineAt(i).text + '\n';
+        }
+        
+        // Add archive note with timestamp
+        const now = new Date();
+        const timestamp = now.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        blockContent = blockContent.trim() + '\n  :ARCHIVE: Archived on ' + timestamp + '\n';
+        
+        // Determine the archive file path
+        const currentFilePath = document.uri.fsPath;
+        const archiveFilePath = currentFilePath.replace(/\.org$/, '.archive.org');
+        
+        try {
+            // Ensure the archive file exists with a header
+            if (!fs.existsSync(archiveFilePath)) {
+                const archiveHeader = `#+TITLE: Archive for ${path.basename(currentFilePath)}\n#+ARCHIVE_TIME: ${timestamp}\n\n`;
+                fs.writeFileSync(archiveFilePath, archiveHeader);
+            }
+            
+            // Append the archived content to the archive file
+            fs.appendFileSync(archiveFilePath, blockContent + '\n\n');
+            
+            // Delete the original block
+            await editor.edit(editBuilder => {
+                const range = new vscode.Range(
+                    new vscode.Position(position.line, 0),
+                    new vscode.Position(blockEndLine + 1, 0)
+                );
+                editBuilder.delete(range);
+            });
+            
+            const stateText = state ? `${state} item` : 'item';
+            vscode.window.showInformationMessage(`${stateText} "${headingTitle}" archived successfully.`);
+            
+            // Optionally open the archive file
+            const openArchive = await vscode.window.showInformationMessage(
+                'Item archived. Would you like to open the archive file?',
+                'Yes', 'No'
+            );
+            
+            if (openArchive === 'Yes') {
+                const archiveUri = vscode.Uri.file(archiveFilePath);
+                await vscode.commands.executeCommand('vscode.open', archiveUri);
+            }
+        } catch (error) {
+            const errorMessage = (error instanceof Error) ? error.message : String(error);
+            vscode.window.showErrorMessage(`Failed to archive item: ${errorMessage}`);
+            console.error(error);
+        }
+    });
+
+    // Add to context.subscriptions
+    context.subscriptions.push(archiveDoneCommand, archiveCurrentCommand);    
+
+    // vscode.window.onDidChangeVisibleTextEditors(() => {
+    //     // Apply decorations to all visible org files
+    //     vscode.window.visibleTextEditors.forEach(editor => {
+    //         if (editor.document.languageId === 'org') {
+    //             updateDecorations();
+    //         }
+    //     });
+    // }, null, context.subscriptions);  
+    
+    // Register the Insert Timestamp command
+    let insertTimestampCommand = vscode.commands.registerCommand('org-mode.insertTimestamp', () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) return;
+        
+        // Generate timestamp in the format **hh:mm MM/DD**
+        const now = new Date();
+        
+        // Format hours and minutes with leading zeros
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        
+        // Format month and day with leading zeros
+        const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const day = String(now.getDate()).padStart(2, '0');
+        
+        // Create the formatted timestamp
+        const timestamp = `**${hours}:${minutes} ${month}/${day}**`;
+        
+        // Insert the timestamp at the cursor position
+        editor.edit(editBuilder => {
+            editBuilder.insert(editor.selection.active, timestamp);
+        });
+    });
+
+    // Add to context.subscriptions
+    context.subscriptions.push(insertTimestampCommand);    
 
 }
 

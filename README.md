@@ -150,6 +150,21 @@ This extension adds basic Org mode support to Visual Studio Code, similar to Ema
 - All block types will be highlighted with a purple background
 - Blocks with checked checkboxes ([x]) will have green text
 
+### 8. Archiving
+- Archive DONE items with `Alt+A` when cursor is on a DONE heading
+- Archive any heading (regardless of status) with `Alt+Shift+A`
+- Archived items are moved to a `.archive.org` file with the same base name
+- Archive files include timestamps and original content structure
+- Option to open the archive file after archiving
+
+### Working with archives
+- Complete a task by changing its state to DONE
+- Position cursor on the DONE heading line
+- Press `Alt+A` to archive the completed item
+- The entire heading block will be moved to the archive file
+- Archive files maintain the same structure as the original
+- Archive entries include a timestamp showing when they were archived
+
 ## Extension Settings
 
 ### Configurable Options
